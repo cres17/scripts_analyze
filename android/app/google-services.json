@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "934349167161",
+    "project_id": "scripts-analyze",
+    "storage_bucket": "scripts-analyze.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934349167161:android:371ff872a6c98400d58be8",
+        "android_client_info": {
+          "package_name": "com.example.scripts_analyze"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKmDDjI6MKVkd3vJPjirfwReNRnYT5pmo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
