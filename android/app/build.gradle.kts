@@ -1,14 +1,14 @@
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
-    id("com.google.gms.google-services") version "4.4.2" apply false
+    id("com.google.gms.google-services")
     // END: FlutterFire Configuration
-    id("kotlin-android")
+    id("org.jetbrains.kotlin.android")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.flutter_app"
+    namespace = "com.example.scripts_analyze"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -21,11 +21,8 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
-    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
-    implementation("com.google.firebase:firebase-analytics")
-
     defaultConfig {
-        applicationId = "com.example.flutter_app"
+        applicationId = "com.example.scripts_analyze"
 
         // ✅ Flutter 기본값 무시하고 minSdk를 23으로 명시
         minSdk = 23
@@ -39,6 +36,13 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+
+dependencies {
+    // ✅ 이 블록 안에서만 implementation과 platform 사용
+    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    implementation("com.google.firebase:firebase-analytics")
 }
 
 flutter {
