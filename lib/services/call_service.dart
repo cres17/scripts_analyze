@@ -58,7 +58,10 @@ class CallService {
   // 통화 시작
   Future<void> startCall(List<String> participants) async {
     if (_currentCallState != CallState.idle) return;
-    
+  
+    if (_currentCallState == CallState.connected) {
+    }
+
     _updateCallState(CallState.connecting);
     
     try {

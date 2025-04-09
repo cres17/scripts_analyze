@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 import 'services/call_service.dart';
 import 'ui/history_screen.dart';
+import 'ui/video_call_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,8 +40,44 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late CallService _callService;
+  late StreamSubscription _callStateSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _callService = Provider.of<CallService>(context, listen: false);
+
+    _callStateSubscription = _callService.callStateStream.listen((state) {
+      if (state == CallState.connected) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const VideoCallScreen(),
+          ),
+        );
+      }
+      if (state == CallState.idle) {
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context); // 영상통화 화면 닫기
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _callStateSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +103,9 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                final callService = Provider.of<CallService>(context, listen: false);
-                callService.startCall(['User1', 'User2']); // 영상통화 시작, 실제로는 인자값 조정 필요
+                _callService.startCall(['User1', 'User2']); // context 인자 제거!
               },
-              child: const Text('영상통화 시작'),
+              child: const Text('통화 시작'),
             ),
           ],
         ),

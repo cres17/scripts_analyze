@@ -10,6 +10,7 @@ pluginManagement {
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
     
     plugins {
+        id("com.android.application") version "8.7.0"
         id("org.jetbrains.kotlin.android") version "2.1.0"
     }
 
