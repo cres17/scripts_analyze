@@ -43,6 +43,7 @@ dependencies {
     // ✅ 이 블록 안에서만 implementation과 platform 사용
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation ("com.google.firebase:firebase-auth")
 }
 
 flutter {
