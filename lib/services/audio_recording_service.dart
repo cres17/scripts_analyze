@@ -2,12 +2,16 @@ import 'dart:io';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_firestore/firebase_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class AudioRecordingService {
   // 이렇게 사용하면 됩니다
   final _audioRecorder = AudioRecorder();
   String? _recordingPath;
   bool _isRecording = false;
+  bool _isProcessingConnection = false;
+  bool _isProcessingJoin = false;
 
   // 녹음 시작 함수
   Future<void> startRecording(String conversationId) async {
@@ -87,4 +91,67 @@ class AudioRecordingService {
 
   // 녹음 상태 확인 함수
   bool get isRecording => _isRecording;
+
+  void _listenForWaitingUsers() {
+    _waitingRoomSubscription?.cancel();
+    
+    _waitingRoomSubscription = FirebaseFirestore.instance
+        .collection('waiting_users')
+        .orderBy('timestamp')
+        .limit(10)
+        .snapshots()
+        .listen((snapshot) async {
+      if (_isInCall || _isProcessingConnection) return;
+      
+      // 대기 중인 사용자들
+      final waitingUsers = snapshot.docs.where((doc) => doc.id != currentUserId).toList();
+      
+      if (waitingUsers.isNotEmpty) {
+        // 중복 처리 방지
+        _isProcessingConnection = true;
+        
+        try {
+          // 기존 피어 연결 정리
+          if (_peerConnection != null) {
+            await _peerConnection!.close();
+            _peerConnection = null;
+          }
+          
+          // 새 연결 시작
+          final oldestWaitingUser = waitingUsers.first;
+          await createCall(oldestWaitingUser.id);
+        } catch (e) {
+          debugPrint('연결 시도 오류: $e');
+        } finally {
+          _isProcessingConnection = false;
+        }
+      }
+    });
+  }
+
+  void listenForCalls() {
+    FirebaseFirestore.instance
+        .collection('user_calls')
+        .doc(currentUserId)
+        .snapshots()
+        .listen((doc) async {
+      if (!doc.exists || doc.data() == null || _isProcessingJoin) return;
+      
+      _isProcessingJoin = true;
+      try {
+        final data = doc.data()!;
+        // ... 기존 코드 ...
+      } finally {
+        _isProcessingJoin = false;
+      }
+    });
+  }
+
+  // 초대 문서 삭제
+  Future<void> deleteCall() async {
+    await FirebaseFirestore.instance
+        .collection('user_calls')
+        .doc(currentUserId)
+        .delete();
+  }
 }
