@@ -21,6 +21,29 @@ class Conversation {
     required this.createdAt,
   });
 
+  Conversation copyWith({
+    String? id,
+    List<String>? participants,
+    DateTime? startTime,
+    DateTime? endTime,
+    String? audioFilePath,
+    String? whisperScript,
+    Map<String, dynamic>? gptAnalysis,
+    Timestamp? createdAt,
+  }) {
+    return Conversation(
+      id: id ?? this.id,
+      participants: participants ?? this.participants,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      audioFilePath: audioFilePath ?? this.audioFilePath,
+      whisperScript: whisperScript ?? this.whisperScript,
+      gptAnalysis: gptAnalysis ?? this.gptAnalysis,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  
   // Firestore 데이터를 Conversation 객체로 변환
   factory Conversation.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;

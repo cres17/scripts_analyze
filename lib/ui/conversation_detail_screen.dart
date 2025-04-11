@@ -19,6 +19,7 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen>
   bool _loading = true;
   String? _error;
   late TabController _tabController;
+  
 
   @override
   void initState() {
@@ -42,18 +43,33 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen>
     }
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Future<void> _analyzeWithGPT() async {
+    if (_conversation?.whisperScript == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('스크립트가 먼저 필요합니다.')),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final updated = await _storageService.analyzeConversationWithGPT(_conversation!);
+      setState(() {
+        _conversation = updated;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('GPT 분석 실패: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_error != null) {
@@ -63,14 +79,7 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen>
       );
     }
 
-    final conv = _conversation;
-
-    if (conv == null) {
-      return const Scaffold(
-        body: Center(child: Text('대화 정보를 불러올 수 없습니다.')),
-      );
-    }
-
+    final conv = _conversation!;
     return Scaffold(
       appBar: AppBar(
         title: Text('대화 상세 (ID: ${widget.conversationId.substring(0, 6)}...)'),
@@ -81,27 +90,25 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen>
             Tab(text: 'GPT 분석 결과'),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_fix_high),
+            tooltip: 'GPT 분석',
+            onPressed: _analyzeWithGPT,
+          )
+        ],
       ),
-      body: conv.whisperScript == null && conv.gptAnalysis == null
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('대화 처리 중입니다. 잠시 후 다시 확인해주세요.'),
-                ],
-              ),
-            )
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildScriptView(conv),
-                _buildAnalysisTab(conv),
-              ],
-            ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildScriptView(conv),
+          _buildAnalysisTab(conv),
+        ],
+      ),
     );
   }
+
+  
 
   Widget _buildScriptView(Conversation conv) {
     return SingleChildScrollView(

@@ -186,25 +186,23 @@ class CallService with ChangeNotifier {
     });
   }
   Future<void> autoConnect() async {
-  final snapshot = await FirebaseFirestore.instance
-      .collection('calls')
-      .doc('active')
-      .collection('rooms')
-      .where('callee', isEqualTo: currentUserId)
-      .get();
+    final snapshot = await FirebaseFirestore.instance
+        .collection('calls')
+        .doc('active')
+        .collection('rooms')
+        .where('callee', isEqualTo: currentUserId)
+        .get();
 
-  if (snapshot.docs.isNotEmpty) {
-    // 내가 호출 당한 상태면 즉시 join
-    final roomId = snapshot.docs.first.id;
-    await joinCall(roomId);
-  } else {
-    // 상대를 지정하거나 자동 선택해서 createCall 호출
-    const calleeId = 'receiverUserId'; // TODO: 자동 매칭 로직 구현
-    await createCall(calleeId);
+    if (snapshot.docs.isNotEmpty) {
+      // 내가 호출 당한 상태면 즉시 join
+      final roomId = snapshot.docs.first.id;
+      await joinCall(roomId);
+    } else {
+      // 상대를 지정하거나 자동 선택해서 createCall 호출
+      const calleeId = 'receiverUserId'; // TODO: 자동 매칭 로직 구현
+      await createCall(calleeId);
+    }
   }
-}
-
-
   
 
   void listenForMatchedRoom(String userId) {
