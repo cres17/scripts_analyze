@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.scripts_analyze"
+    namespace = "com.demo.scriptsanalyze"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.scripts_analyze"
+        applicationId = "com.demo.scriptsanalyze"
 
         // ✅ Flutter 기본값 무시하고 minSdk를 23으로 명시
         minSdk = 23

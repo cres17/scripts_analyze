@@ -1,4 +1,4 @@
-package com.example.scripts_analyze
+package com.demo.scriptsanalyze
 
 import io.flutter.embedding.android.FlutterActivity
 

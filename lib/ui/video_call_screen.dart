@@ -13,16 +13,18 @@ class VideoCallScreen extends StatefulWidget {
 class _VideoCallScreenState extends State<VideoCallScreen> {
   RTCVideoRenderer? _localRenderer;
   RTCVideoRenderer? _remoteRenderer;
-  final TextEditingController _roomIdController = TextEditingController();
+  bool _isConnecting = true;
 
   @override
   void initState() {
     super.initState();
     final callService = Provider.of<CallService>(context, listen: false);
 
+    // 자동 연결 시도
     callService.localRendererStream.listen((renderer) {
       setState(() {
         _localRenderer = renderer;
+        _isConnecting = false;
       });
     });
 
@@ -30,6 +32,11 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       setState(() {
         _remoteRenderer = renderer;
       });
+    });
+
+    // 🔽 자동 연결 (callee일 경우 joinCall, caller일 경우 createCall)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      callService.autoConnect(); // 위에서 만든 createCall/joinCall 자동 호출 함수
     });
   }
 
@@ -45,9 +52,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             icon: const Icon(Icons.call_end),
             onPressed: () async {
               await callService.endCall();
-              if (mounted) {
-                Navigator.pop(context);
-              }
+              if (mounted) Navigator.pop(context);
             },
           ),
         ],
@@ -60,7 +65,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                     _remoteRenderer!,
                     objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                   )
-                : const Center(child: CircularProgressIndicator()),
+                : const Center(child: Text("상대방을 기다리는 중...")),
           ),
           SizedBox(
             height: 200,
@@ -70,37 +75,13 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                     mirror: true,
                     objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
                   )
-                : const SizedBox.shrink(),
+                : const Center(child: CircularProgressIndicator()),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _roomIdController,
-                  decoration: const InputDecoration(
-                    labelText: 'Room ID',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    final roomId = _roomIdController.text.trim();
-                    if (roomId.isNotEmpty) {
-                      await callService.joinCall(roomId);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Room ID를 입력하세요.")),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.video_call),
-                  label: const Text('통화 참여'),
-                ),
-              ],
+          if (_isConnecting)
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text("통화 연결 중...", style: TextStyle(fontSize: 16)),
             ),
-          ),
         ],
       ),
     );
@@ -110,7 +91,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   void dispose() {
     _localRenderer?.dispose();
     _remoteRenderer?.dispose();
-    _roomIdController.dispose();
     super.dispose();
   }
 }
