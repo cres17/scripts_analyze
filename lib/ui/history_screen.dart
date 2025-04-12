@@ -73,7 +73,21 @@ class HistoryScreen extends StatelessWidget {
                         ),
                     ],
                   ),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: conv.gptAnalysis == null && conv.whisperScript != null
+                      ? ElevatedButton(
+                          onPressed: () async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            messenger.showSnackBar(const SnackBar(content: Text('GPT 분석 중...')));
+                            try {
+                              final updated = await _storageService.analyzeConversationWithGPT(conv);
+                              messenger.showSnackBar(const SnackBar(content: Text('GPT 분석 완료')));
+                            } catch (e) {
+                              messenger.showSnackBar(SnackBar(content: Text('GPT 분석 실패: $e')));
+                            }
+                          },
+                          child: const Text('GPT 분석'),
+                        )
+                      : const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.push(
                       context,

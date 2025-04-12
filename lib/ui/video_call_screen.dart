@@ -343,8 +343,12 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   
   @override
   void dispose() {
+    _localRenderer.srcObject = null;
+    _remoteRenderer.srcObject = null;
+
     _localRenderer.dispose();
     _remoteRenderer.dispose();
+
     super.dispose();
   }
 }
